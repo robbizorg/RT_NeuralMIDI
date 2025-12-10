@@ -41,7 +41,11 @@ if __name__ == '__main__':
     sr = 48000
     print(f'Generating Audio at {sr}Hz')
 
-    soundfiles = glob.glob(os.path.join(sf_path, '*.sf2'))
+    # soundfiles = glob.glob(os.path.join(sf_path, '*.sf2'))
+    soundfiles = []
+    soundfiles.append(os.path.join(sf_path, 'Touhou.sf2'))
+    soundfiles.append(os.path.join(sf_path, 'DSoundfont_Ultimate.sf2'))
+    soundfiles.append(os.path.join(sf_path, 'Shreddage_II_Revalver_MK_III.V_.sf2'))
 
     for soundfile in soundfiles: 
         print(f'Processing {soundfile}')
@@ -73,15 +77,21 @@ if __name__ == '__main__':
                 audio = render_note_to_numpy(
                     sf2_path=soundfile,
                     midi_pitch=midi_p,
-                    velocity=100,
+                    velocity=80,
                     duration_sec=4.0,
                     program=program,
                     sample_rate=sr
                 ) # [sr*duration, C]
 
                 
-                filename = f'{midi_p}_100.wav'
+                filename = f'{midi_p}_80.wav'
                 audio_path = os.path.join(inst_path, filename)
 
-                sf.write(audio_path, audio, sr)
+                # Normalize Audio Before Writing
+                peak = np.max(np.abs(audio)) if audio.size else 0.0
+
+                if peak > 0:
+                    audio = audio / peak * 0.9  # normalize to -1..1 range with a bit of headroom
+
+                sf.write(audio_path, audio, samplerate=sr)
 
