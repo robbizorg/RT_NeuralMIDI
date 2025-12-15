@@ -1,0 +1,48 @@
+device : 'cuda:0'
+seed : 211
+sample_rate : 48000 
+buffer_size : 1024 # 1024 =~ 21.3ms
+prev_ratio : 2 # Ratio of previous information to current information (2 means we have 2 * buffer_size previous frames, also effects padding)
+
+vocos_config: 
+  backbone:
+    input_channels: 1 # F0
+    dim: 256
+    intermediate_dim: 512
+    num_layers: 4
+
+  head:
+    dim: 256
+    n_fft: 1024
+    hop_length: 60
+    padding: same
+
+
+# timbre encoder 
+timbre_config: 
+  use_attentive_encoder : True
+  timbre_encoder_config:
+    spkr_emb_dim : 32
+    hidden_dim : 256
+
+
+# discriminator
+features : [32, 64, 128, 256]
+scales : [2048, 1024, 512, 256, 128, 64]
+mpd_periods : [2, 3, 5, 7, 11]
+
+# optimizer and scheduler
+lr_gen : 3.0e-4
+lr_disc : 3.0e-7 # Seems like an easier task for the discriminator, make it weaker
+betas : [0.5, 0.9]
+milestones : [6, 11]
+total_epochs : 30
+gamma : 0.3
+
+# training params
+mel_loss_coeff : 1.0
+gen_loss_coeff : 5.0
+fm_loss_coeff : 1.0
+mrd_loss_coeff : 1.0
+comment: 'midi_vocos_1st'
+batch_size: 32

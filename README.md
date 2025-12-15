@@ -4,7 +4,9 @@ Real-Time Neural Instrument controllable via Midi Pitch, Velocity, and Instrumen
 
 Todos: 
  - [] Figure out Streaming Setup 
- - [] Create/Collect Dataset (TorchSynth/Carmine's Datasets/Midi Generation)
+ - [X] Create/Collect Dataset (TorchSynth/Carmine's Datasets/Midi Generation)
+    - Ended up going with Midi Generation
+ - [] Iterate over Architectures, Sort by Runtime
 
 
 Possible SoundFont Datasets
@@ -36,3 +38,8 @@ Sample Directory Format:
     - sf2_filename
         - Instrument
             - note_vel.wav
+
+
+### Training Assumptions
+
+Since we only want to generate sounds that are in the dataset, we are alright with not having a Train-Test Split

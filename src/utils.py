@@ -4,6 +4,7 @@ utils.py
 """
 
 import numpy as np 
+import torch
 import soundfile as sf 
 from sf2utils.sf2parse import Sf2File
 import os 
@@ -149,3 +150,8 @@ def get_soundfont_structure(sf2_path):
         })
 
     return presets
+
+# Quantization
+def fsq_quantization(x, L = 10): 
+    x = np.floor(L / 2)*torch.tanh(x)
+    return torch.round(x)
