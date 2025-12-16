@@ -57,6 +57,7 @@ train_collate_fn:
  - Desc: 
 """
 def train_collate_fn(batch): 
+    sr = 48000
     x = torch.stack([item[0] for item in batch]) # Combine Audios
     pitch = torch.stack([item[1] for item in batch])
 
@@ -84,9 +85,17 @@ def train_collate_fn(batch):
         xs.append(sub_x)
         prev_xs.append(prev_x)
 
-    import pdb; pdb.set_trace()
+    # Then also include a sample that's from the first second to ensure some instrument played 
+    idx = np.random.choice(range(start_idx, 48000), size = 1)[0]
+    prev_x = x[:, idx - pad_len: idx] # Previous Info
+    sub_x = x[:, idx : idx + buffer_size]
 
-    return xs, prev_xs, pitch 
+    timbre_x = x[:, start_idx : start_idx + sr]
+
+    xs.append(sub_x)
+    prev_xs.append(prev_x)
+
+    return xs, prev_xs, timbre_x, pitch 
 
 if __name__ == '__main__': 
     dataset = Midi_Seg('/data/robbizorg/music/samples')

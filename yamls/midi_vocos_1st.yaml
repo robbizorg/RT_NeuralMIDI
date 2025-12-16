@@ -3,13 +3,15 @@ seed : 211
 sample_rate : 48000 
 buffer_size : 1024 # 1024 =~ 21.3ms
 prev_ratio : 2 # Ratio of previous information to current information (2 means we have 2 * buffer_size previous frames, also effects padding)
+ckpt_path : './ckpt'
 
 vocos_config: 
   backbone:
-    input_channels: 1 # F0
+    input_channels: 1027  # F0 + Spectral Dim (for n_fft of 1024 equals 1026)
     dim: 256
     intermediate_dim: 512
     num_layers: 4
+    timbre_emb_dim : 128
 
   head:
     dim: 256
@@ -20,15 +22,15 @@ vocos_config:
 
 # timbre encoder 
 timbre_config: 
-  use_attentive_encoder : True
-  timbre_encoder_config:
-    spkr_emb_dim : 32
-    hidden_dim : 256
+  input_channels: 1026 # Spectral Dim (Same as Input Channels - 1)
+  out_channels: 256 # Want to downsample by factor of ~4
+  timbre_emb_dim : 128
+  dilations : [4, 8]
 
 
 # discriminator
-features : [32, 64, 128, 256]
-scales : [2048, 1024, 512, 256, 128, 64]
+features : [32, 64]
+scales : [512, 256, 128, 64]
 mpd_periods : [2, 3, 5, 7, 11]
 
 # optimizer and scheduler

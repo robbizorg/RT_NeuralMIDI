@@ -6,6 +6,7 @@ from torch.nn.utils import weight_norm
 
 from src.modules import ConvNeXtBlock, ResBlock1, AdaLayerNorm
 from src.heads import ISTFTHead
+from src.encoder import MLPFiLM
 
 class Backbone(nn.Module):
     """Base class for the generator's backbone. It preserves the same temporal resolution across all layers."""
@@ -45,6 +46,7 @@ class VocosBackbone(Backbone):
         num_layers: int,
         layer_scale_init_value: Optional[float] = None,
         adanorm_num_embeddings: Optional[int] = None,
+        timbre_emb_dim: Optional[int] = None,
     ):
         super().__init__()
         self.input_channels = input_channels
@@ -66,6 +68,9 @@ class VocosBackbone(Backbone):
                 for _ in range(num_layers)
             ]
         )
+        if timbre_emb_dim is not None: 
+            self.timbre_film = MLPFiLM(in_channels=dim, hidden_dim=intermediate_dim, out_channels=dim, timbre_emb_dim=timbre_emb_dim)
+
         self.final_layer_norm = nn.LayerNorm(dim, eps=1e-6)
         self.apply(self._init_weights)
 
@@ -76,6 +81,7 @@ class VocosBackbone(Backbone):
 
     def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         bandwidth_id = kwargs.get('bandwidth_id', None)
+        timbre_emb = kwargs.get('timbre_emb', None)
         x = self.embed(x)
         if self.adanorm:
             assert bandwidth_id is not None
@@ -85,6 +91,10 @@ class VocosBackbone(Backbone):
         x = x.transpose(1, 2)
         for conv_block in self.convnext:
             x = conv_block(x, cond_embedding_id=bandwidth_id)
+
+        if timbre_emb is not None: 
+            x = self.timbre_film(x, timbre_emb)
+
         x = self.final_layer_norm(x.transpose(1, 2))
         return x
 
@@ -140,7 +150,8 @@ class Vocos(nn.Module):
             intermediate_dim = backbone_config['intermediate_dim'],
             num_layers = backbone_config['num_layers'],
             layer_scale_init_value = backbone_config.get('layer_scale_init_value', None),
-            adanorm_num_embeddings = backbone_config.get('adanorm_num_embeddings', None)
+            adanorm_num_embeddings = backbone_config.get('adanorm_num_embeddings', None), 
+            timbre_emb_dim=backbone_config.get('timbre_emb_dim', None)
         )
 
         self.head = ISTFTHead(

@@ -74,3 +74,47 @@ class ISTFT(nn.Module):
 
         return y
 
+
+class STFT(nn.Module):
+    """
+    STFT Module for processing buffers
+
+    Args:
+        n_fft (int): Size of Fourier transform.
+        hop_length (int): The distance between neighboring sliding window frames.
+        win_length (int): The size of window frame and STFT filter.
+        padding (str, optional): Type of padding. Options are "center" or "same". Defaults to "same".
+    """
+
+    def __init__(self, n_fft: int, hop_length: int, win_length: int, padding: str = "same"):
+        super().__init__()
+        if padding not in ["center", "same"]:
+            raise ValueError("Padding must be 'center' or 'same'.")
+        self.padding = padding
+        self.n_fft = n_fft
+        self.hop_length = hop_length
+        self.win_length = win_length
+        window = torch.hann_window(win_length)
+        self.register_buffer("window", window)
+
+    def forward(self, x): 
+        # -----------------------------
+        # STFT
+        # -----------------------------
+        X = torch.stft(
+            x,
+            n_fft=self.n_fft,
+            hop_length=self.hop_length,
+            win_length=self.win_length,
+            window=self.window,
+            center=True,
+            return_complex=True,
+        )
+
+        # Magnitude spectrogram
+        mag = torch.abs(X)          # (freq, time)
+
+        # Phase
+        phase = torch.angle(X) 
+
+        return torch.cat([mag, phase], dim = 1)

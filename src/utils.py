@@ -20,7 +20,13 @@ import tempfile
 import pretty_midi
 import fluidsynth
 
-
+# Given model, calculate diff parameters
+def calc_nparam(model):
+    nparam = 0
+    for p in model.parameters():
+        if p.requires_grad:
+            nparam += p.numel()
+    return nparam
 
 def midi_to_note_name(n):
     """Converts MIDI note number → name like C4."""
@@ -155,3 +161,24 @@ def get_soundfont_structure(sf2_path):
 def fsq_quantization(x, L = 10): 
     x = np.floor(L / 2)*torch.tanh(x)
     return torch.round(x)
+
+
+""" 
+Saving Function Helpers
+"""
+def save_model(ckpt_path, run_name, model, timbre_encoder, 
+               epoch_num = None): 
+    tgt_path = os.path.join(ckpt_path, run_name)
+    if not os.path.exists(tgt_path): 
+        os.mkdir(tgt_path)
+
+    if epoch_num is not None: 
+        tgt_path = os.path.join(tgt_path, str(epoch_num))
+        if not os.path.exists(tgt_path): 
+            os.mkdir(tgt_path)
+
+    model_path = os.path.join(tgt_path, 'VocosSynth.pth')
+    timbre_path = os.path.join(tgt_path, 'VocosTimbre.pth')
+
+    torch.save(model.state_dict(), model_path)
+    torch.save(timbre_encoder.state_dict(), timbre_path)

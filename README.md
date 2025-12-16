@@ -6,7 +6,9 @@ Todos:
  - [] Figure out Streaming Setup 
  - [X] Create/Collect Dataset (TorchSynth/Carmine's Datasets/Midi Generation)
     - Ended up going with Midi Generation
- - [] Iterate over Architectures, Sort by Runtime
+ - [X] Iterate over Architectures, Sort by Runtime
+ - [] Implement FiLM Conditioning for Vocos Synth
+ - [] Implement Timbre Encoder (Simple ECAPA-TDNN)
 
 
 Possible SoundFont Datasets
@@ -43,3 +45,8 @@ Sample Directory Format:
 ### Training Assumptions
 
 Since we only want to generate sounds that are in the dataset, we are alright with not having a Train-Test Split
+
+
+### Training Instructions
+
+Example Command: `CUDA_VISIBLE_DEVICES=1 nohup python -u -m src.main &>logs/training/midi_vocos_1st.out &`
