@@ -32,7 +32,7 @@ def trainer(model, tmbr_encoder, stft_transform,
     interval = 100 # print training loss every `interval` samples
 
     val_step = 1
-    val_interval = len(train_dataloader) // 10
+    val_interval = (len(train_dataloader) * 5) // 10
 
     flush_interval = 200
     scales = config['scales'] # Disc. Scales
@@ -44,7 +44,7 @@ def trainer(model, tmbr_encoder, stft_transform,
     fm_loss_coeff = config.get('fm_loss_coeff', 1.0)
     mel_loss_coeff = config.get('mel_loss_coeff', 1.0)
 
-    save_epochs = [0, 1, 2, 5, 10]
+    save_epochs = [0, 1, 2, 5, 10, 15, 30, 50, 75, 99]
     for epoch in range(total_epochs):
         model.train()
         tmbr_encoder.train()
@@ -171,12 +171,12 @@ def trainer(model, tmbr_encoder, stft_transform,
                     
                     end = time.time()
                     elapsed_time = end - start
-                    writer.add_scalar('MSSLoss_training', running_loss_recon / interval, epoch*len(train_dataloader)+i)
-                    writer.add_scalar('Disc_loss_training', running_loss_disc / interval, epoch*len(train_dataloader)+i)
-                    writer.add_scalar('Gen_loss_training', running_loss_gen / interval, epoch*len(train_dataloader)+i)
+                    writer.add_scalar('MSSLoss_training', running_loss_recon / interval, epoch*5*len(train_dataloader)+i)
+                    writer.add_scalar('Disc_loss_training', running_loss_disc / interval, epoch*5*len(train_dataloader)+i)
+                    writer.add_scalar('Gen_loss_training', running_loss_gen / interval, epoch*5*len(train_dataloader)+i)
 
                     print(f'#################RUNTIME: {elapsed_time:.{4}f}#################')
-                    print(f'Epoch [{epoch+1}/{total_epochs}], Batch [{i+1}/{len(train_dataloader)}], MSSLoss_training: {(running_loss_recon / interval):.{6}f}, Gen_loss_training: {(running_loss_gen / interval):.{6}f}, Disc_loss_training: {(running_loss_disc / interval):.{6}f}')
+                    print(f'Epoch [{epoch+1}/{total_epochs}], Batch [{i+1}/{len(train_dataloader)*5}], MSSLoss_training: {(running_loss_recon / interval):.{6}f}, Gen_loss_training: {(running_loss_gen / interval):.{6}f}, Disc_loss_training: {(running_loss_disc / interval):.{6}f}')
                     running_loss_recon = 0.
                     running_loss_disc = 0.
                     running_loss_gen = 0.
@@ -193,6 +193,7 @@ def trainer(model, tmbr_encoder, stft_transform,
 
         # End of Epoch
         if epoch in save_epochs: 
+            print(f'Saving Epoch {epoch}')
             save_model(ckpt_path, comment, model, tmbr_encoder, epoch_num=epoch)
 
         # scheduler step and save model

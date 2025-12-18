@@ -8,7 +8,7 @@ import torch
 import soundfile as sf 
 from sf2utils.sf2parse import Sf2File
 import os 
-
+import math 
 import logging
 
 # Suppress sf2utils warnings about midi start and stops
@@ -34,6 +34,29 @@ def midi_to_note_name(n):
     octave = (n // 12) - 1
     name = names[n % 12]
     return f"{name}{octave}"
+
+def hz_to_nearest_midi(hz: float, a4_hz: float = 440.0):
+    """
+    Convert frequency (Hz) to nearest MIDI note.
+
+    Returns:
+      midi (int): nearest MIDI note number (A4=69 at a4_hz)
+      cents (float): signed cents offset from the nearest MIDI note
+    """
+    if hz <= 0 or not math.isfinite(hz):
+        raise ValueError(f"hz must be a positive finite number, got {hz}")
+
+    midi_float = 69.0 + 12.0 * math.log2(hz / a4_hz)
+    midi = int(round(midi_float))
+
+    # cents difference between hz and the rounded MIDI note
+    hz_nearest = a4_hz * (2.0 ** ((midi - 69) / 12.0))
+    cents = 1200.0 * math.log2(hz / hz_nearest)
+
+    pc = midi % 12
+    octave = (midi // 12) - 1  # MIDI 60 -> C4
+
+    return midi
 
 def inspect_soundfont(sf2_path: str):
     # Load SoundFont
