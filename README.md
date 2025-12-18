@@ -36,3 +36,7 @@ Sample Directory Format:
 ### Training Instructions
 
 Example Command: `CUDA_VISIBLE_DEVICES=0 nohup python -u -m src.main &>logs/training/midi_vocos_1st.out &`
+
+### Sound Generation
+
+Please refer to notebook 10_midi_gen.ipynb to see how to use the saved checkpoints to generate sounds. NOTE: It is necessary to update the dotenv_path with the path of your own .env file. 
