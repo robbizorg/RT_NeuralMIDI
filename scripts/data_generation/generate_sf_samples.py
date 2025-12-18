@@ -47,6 +47,7 @@ if __name__ == '__main__':
     soundfiles.append(os.path.join(sf_path, 'DSoundfont_Ultimate.sf2'))
     soundfiles.append(os.path.join(sf_path, 'Shreddage_II_Revalver_MK_III.V_.sf2'))
 
+    remake = False
     for soundfile in soundfiles: 
         print(f'Processing {soundfile}')
 
@@ -70,10 +71,22 @@ if __name__ == '__main__':
 
             inst_name = name.replace('_', '-').replace(' ', '-')
             inst_path = os.path.join(sf_dir, inst_name)
-            if not os.path.exists(inst_path): 
-                os.mkdir(inst_path)
+            try:
+                if not os.path.exists(inst_path): 
+                    os.mkdir(inst_path)
+            except: 
+                print(f'Failed on {inst_path}, continuing')
+                continue
+
+            print(f'Processing {inst_path}')
 
             for midi_p in pitch_range: 
+                filename = f'{midi_p}_80.wav'
+                audio_path = os.path.join(inst_path, filename)
+
+                if not remake and os.path.exists(audio_path): 
+                    continue
+
                 audio = render_note_to_numpy(
                     sf2_path=soundfile,
                     midi_pitch=midi_p,
@@ -83,9 +96,7 @@ if __name__ == '__main__':
                     sample_rate=sr
                 ) # [sr*duration, C]
 
-                
-                filename = f'{midi_p}_80.wav'
-                audio_path = os.path.join(inst_path, filename)
+
 
                 # Normalize Audio Before Writing
                 peak = np.max(np.abs(audio)) if audio.size else 0.0
