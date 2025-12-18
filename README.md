@@ -1,6 +1,6 @@
 ## Real-Time MusicGen
 
-Real-Time Neural Instrument controllable via Midi Pitch, Velocity, and Instrument Selection
+Real-Time Neural Instrument controllable via Midi Pitch and Timbre Selection
 
 Used SoundFont Datasets
  - Tohou Soundfont (https://musical-artifacts.com/artifacts/433)
